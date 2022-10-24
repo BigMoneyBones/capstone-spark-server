@@ -1,4 +1,5 @@
-const PORT = 8000;
+require("dotenv").config();
+const port = process.env.PORT;
 const express = require("express");
 const { MongoClient, ConnectionPoolClosedEvent } = require("mongodb");
 const { v4: uuidv4 } = require("uuid");
@@ -6,8 +7,8 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 
-const uri =
-  "mongodb+srv://jraines:CodeImmersives2022@codeimmersivescluster.glmif.mongodb.net/CodeImmersivesCluster?retryWrites=true&w=majority";
+const uri = process.env.URI;
+
 const app = express();
 // so cors doesnt block my shit
 app.use(cors());
@@ -50,8 +51,8 @@ app.post("/signup", async (req, res) => {
       expiresIn: 60 * 24,
     });
     res.status(201).json({ token, userId: generatedUserId });
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    console.log(error);
   }
 });
 
@@ -80,8 +81,8 @@ app.post("/login", async (req, res) => {
       res.status(201).json({ token, userId: user.user_id });
     }
     res.status(400).send("Invalid Credentials");
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    console.log(error);
   }
 });
 
@@ -105,7 +106,6 @@ app.get("/user", async (req, res) => {
 app.get("/users", async (req, res) => {
   const client = new MongoClient(uri);
   const userIds = JSON.parse(req.query.userIds);
-  console.log(userIds);
   try {
     await client.connect();
     const database = client.db("Spark");
@@ -123,7 +123,6 @@ app.get("/users", async (req, res) => {
     ];
 
     const foundUsers = await users.aggregate(pipeline).toArray();
-    console.log(foundUsers);
     res.send(foundUsers);
   } finally {
     await client.close();
@@ -133,8 +132,6 @@ app.get("/users", async (req, res) => {
 app.get("/gendered-users", async (req, res) => {
   const client = new MongoClient(uri);
   const gender = req.query.gender;
-
-  console.log("gender: ", gender);
 
   try {
     await client.connect();
@@ -209,8 +206,7 @@ app.get("/messages", async (req, res) => {
   try {
     await client.connect();
     const database = client.db("Spark");
-    const users = database.collection("messages");
-    console.log(userId, correspondingUserId);
+    const messages = database.collection("messages");
 
     // ping mongo, search for messages
     const query = {
@@ -226,4 +222,19 @@ app.get("/messages", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log("Server is running on PORT: " + PORT));
+app.post("/message", async (req, res) => {
+  const client = MongoClient(uri);
+  const message = req.body.message;
+
+  try {
+    await client.connect();
+    const database = client.db("Spark");
+    const messages = database.collection("messages");
+    const insertedMessage = await messages.insertOne(message);
+    res.send(insertedMessage);
+  } finally {
+    await client.close();
+  }
+});
+
+app.listen(port, () => console.log("Server is running on PORT: " + port));
