@@ -223,7 +223,7 @@ app.get("/messages", async (req, res) => {
 });
 
 app.post("/message", async (req, res) => {
-  const client = MongoClient(uri);
+  const client = new MongoClient(uri);
   const message = req.body.message;
 
   try {
