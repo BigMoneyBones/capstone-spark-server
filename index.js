@@ -1,7 +1,7 @@
 require("dotenv").config();
 const port = process.env.PORT;
 const express = require("express");
-const { MongoClient, ConnectionPoolClosedEvent } = require("mongodb");
+const { MongoClient } = require("mongodb");
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
@@ -10,17 +10,19 @@ const bcrypt = require("bcrypt");
 const uri = process.env.URI;
 
 const app = express();
+
 // so cors doesnt block my shit
 app.use(cors());
+
 // so json can be read
 app.use(express.json());
 
-app.get("/", (req, res) => {
+app.get("/api/", (req, res) => {
   res.json("Hello");
 });
 
 // Create Account Form Route
-app.post("/signup", async (req, res) => {
+app.post("/api/signup", async (req, res) => {
   const client = new MongoClient(uri);
   const { email, password } = req.body;
 
@@ -56,7 +58,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.post("/login", async (req, res) => {
+app.post("/api/login", async (req, res) => {
   const client = new MongoClient(uri);
   const { email, password } = req.body;
 
@@ -86,7 +88,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/user", async (req, res) => {
+app.get("/api/user", async (req, res) => {
   const client = new MongoClient(uri);
   const userId = req.query.userId;
 
@@ -103,7 +105,7 @@ app.get("/user", async (req, res) => {
   }
 });
 
-app.get("/users", async (req, res) => {
+app.get("/api/users", async (req, res) => {
   const client = new MongoClient(uri);
   const userIds = JSON.parse(req.query.userIds);
   try {
@@ -129,7 +131,7 @@ app.get("/users", async (req, res) => {
   }
 });
 
-app.get("/gendered-users", async (req, res) => {
+app.get("/api/gendered-users", async (req, res) => {
   const client = new MongoClient(uri);
   const gender = req.query.gender;
 
@@ -148,7 +150,7 @@ app.get("/gendered-users", async (req, res) => {
 });
 
 // put for updating a document
-app.put("/user", async (req, res) => {
+app.put("/api/user", async (req, res) => {
   const client = new MongoClient(uri);
   const formData = req.body.formData;
 
@@ -180,7 +182,7 @@ app.put("/user", async (req, res) => {
   }
 });
 
-app.put("/addmatch", async (req, res) => {
+app.put("/api/addmatch", async (req, res) => {
   const client = new MongoClient(uri);
   const { userId, matchedUserId } = req.body;
 
@@ -200,7 +202,7 @@ app.put("/addmatch", async (req, res) => {
   }
 });
 
-app.get("/messages", async (req, res) => {
+app.get("/api/messages", async (req, res) => {
   const client = new MongoClient(uri);
   const { userId, correspondingUserId } = req.query;
   try {
@@ -222,7 +224,7 @@ app.get("/messages", async (req, res) => {
   }
 });
 
-app.post("/message", async (req, res) => {
+app.post("/api/message", async (req, res) => {
   const client = new MongoClient(uri);
   const message = req.body.message;
 
